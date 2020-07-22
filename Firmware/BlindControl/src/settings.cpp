@@ -9,6 +9,10 @@ String processor(const String& var) {
 
   Serial.println("Processing: " + var);
 
+  if(var == "VERSION") {
+    return FIRMWARE_VERSION;
+  }
+
   if(var == "DEVICE_NAME") {
     return get_devicename();
   }

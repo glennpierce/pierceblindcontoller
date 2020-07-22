@@ -3,6 +3,7 @@
 
 #define DEVICE_NAME "Blind"
 
+#define FIRMWARE_VERSION "0.9"
 #define LED 16
 #define OPEN_BUTTON_PIN 13
 #define CLOSE_BUTTON_PIN 14
