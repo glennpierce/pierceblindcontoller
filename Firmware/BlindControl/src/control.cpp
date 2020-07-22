@@ -7,18 +7,28 @@
 Timer openTimer;
 Timer closeTimer;
 
+static status_t status = STATUS_OPENED;
+
 static void openTimerEvent()
 {
   digitalWrite(OPEN_MOTOR, LOW);
   digitalWrite(LED, LOW);
+
+  status = STATUS_OPENED;
 }
 
 static void closeTimerEvent()
 {
   digitalWrite(CLOSE_MOTOR, LOW);
   digitalWrite(LED, LOW);
+
+  status = STATUS_CLOSED;
 }
 
+status_t getBlindStatus()
+{
+  return status;
+}
 
 void openBlind()
 {

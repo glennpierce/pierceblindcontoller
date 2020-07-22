@@ -49,8 +49,8 @@ Button* button_new(int pin) {
    
     b->debounce = 20;               // ms debounce period to prevent flickering when pressing or releasing the button
     b->DCgap = 250;                 // max ms between clicks for a double click event
-    b->holdTime = 1000;             // ms hold period: how long to wait for press+hold event
-    b->longHoldTime = 3000;         // ms long hold period: how long to wait for press+hold event
+    b->holdTime = 2000;             // ms hold period: how long to wait for press+hold event
+    b->longHoldTime = 4000;         // ms long hold period: how long to wait for press+hold event
 
     b->buttonVal = HIGH;            // value read from button
     b->buttonLast = HIGH;           // buffered value of the button's previous state

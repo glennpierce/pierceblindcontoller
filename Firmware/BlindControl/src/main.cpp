@@ -13,8 +13,10 @@
 #include "control.h"
 #include "settings.h"
 
-const char* ssid = "*******";
-const char* password = "********";
+// const char* ssid = "NimhNoT";
+// const char* password = "77G3PPTF";
+const char* ssid = "NimhIoT";
+const char* password = "746GDT42";
 
 Button* openButton = NULL;
 Button* closeButton = NULL;
@@ -142,8 +144,10 @@ void load_config() {
     {
       DynamicJsonDocument doc(1024);
       String json = configFile.readString();
+      Serial.println(json);
       DeserializationError error = deserializeJson(doc, json);
       if (!error) {
+
         set_opentime(doc["opentime"]);
         set_closetime(doc["closetime"]);
         set_devicename(doc["devicename"]);
@@ -194,6 +198,8 @@ void setup() {
 
     OTASetup();
 
+    Serial.print("setting fauxmo device name: ");
+    Serial.println(get_devicename());
     fauxmo.addDevice(get_devicename());
 
     fauxmo.createServer(true); // not needed, this is the default value
@@ -241,11 +247,13 @@ void loop() {
     BUTTON_EVENT status = checkButton(openButton);
 
     if(status == CLICK) {
-      digitalWrite(LED, HIGH);
-      openBlind();
 
-      Serial.println("Open clicked");
-      stopOpenBlindAfterTime(get_opentime());
+      if(getBlindStatus() != STATUS_OPENED) {
+        digitalWrite(LED, HIGH);
+        openBlind();
+        Serial.println("Open clicked");
+        stopOpenBlindAfterTime(get_opentime());
+      }
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Open long hold");
@@ -261,11 +269,13 @@ void loop() {
     status = checkButton(closeButton);
 
     if(status == CLICK) {
-      digitalWrite(LED, HIGH);
-      closeBlind();
+      if(getBlindStatus() != STATUS_CLOSED) {
+        digitalWrite(LED, HIGH);
+        closeBlind();
 
-      Serial.println("Close clicked");
-      stopCloseBlindAfterTime(get_closetime());
+        Serial.println("Close clicked");
+        stopCloseBlindAfterTime(get_closetime());
+      }
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Close long hold");
