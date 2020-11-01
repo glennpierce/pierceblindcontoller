@@ -13,6 +13,7 @@ void motorUpdate();
 void openBlind();
 void closeBlind();
 status_t getBlindStatus();
+char* getBlindStatusText();
 void stopOpenBlindAfterTime(long milli);
 void stopCloseBlindAfterTime(long milli);
 void stopBlind();

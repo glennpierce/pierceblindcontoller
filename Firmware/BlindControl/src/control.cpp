@@ -30,14 +30,31 @@ status_t getBlindStatus()
   return status;
 }
 
+char* getBlindStatusText()
+{
+  if(getBlindStatus() == STATUS_CLOSED) {
+    return "CLOSED";
+  }
+  else {
+    return "OPENED";
+  }
+}
+
+
 void openBlind()
 {
   digitalWrite(CLOSE_MOTOR, LOW);
   digitalWrite(OPEN_MOTOR, HIGH);
+
+  PubSubClient* client = get_pubsub_client();
+  client->publish(mqtt_status, "OPENED");
 }
 
 void stopOpenBlindAfterTime(long milli) {
   openTimer.after(milli, openTimerEvent);
+
+  PubSubClient* client = get_pubsub_client();
+  client->publish(mqtt_status, "CLOSED");
 }
 
 void closeBlind()
