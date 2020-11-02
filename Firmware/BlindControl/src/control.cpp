@@ -15,6 +15,9 @@ static void openTimerEvent()
   digitalWrite(LED, LOW);
 
   status = STATUS_OPENED;
+
+  PubSubClient* client = get_pubsub_client();
+  client->publish(mqtt_status, "OPENED");
 }
 
 static void closeTimerEvent()
@@ -23,6 +26,9 @@ static void closeTimerEvent()
   digitalWrite(LED, LOW);
 
   status = STATUS_CLOSED;
+
+  PubSubClient* client = get_pubsub_client();
+  client->publish(mqtt_status, "CLOSED");
 }
 
 status_t getBlindStatus()
@@ -40,21 +46,14 @@ char* getBlindStatusText()
   }
 }
 
-
 void openBlind()
 {
   digitalWrite(CLOSE_MOTOR, LOW);
   digitalWrite(OPEN_MOTOR, HIGH);
-
-  PubSubClient* client = get_pubsub_client();
-  client->publish(mqtt_status, "OPENED");
 }
 
 void stopOpenBlindAfterTime(long milli) {
   openTimer.after(milli, openTimerEvent);
-
-  PubSubClient* client = get_pubsub_client();
-  client->publish(mqtt_status, "CLOSED");
 }
 
 void closeBlind()

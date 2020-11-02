@@ -59,13 +59,17 @@ void mqtt_cmnd_callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  for (int i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
   Serial.println();
 
-  String command =  String((char*)payload);
+  char tmp[100] = "";
+  memcpy(tmp, payload, length);
+  String command = String(tmp);
   command.toLowerCase();  
+
+  Serial.println(command);
 
   if(command.equals("open")) {
     openBlind();
