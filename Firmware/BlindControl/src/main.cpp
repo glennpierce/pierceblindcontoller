@@ -2,6 +2,8 @@
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
+#include "DHT.h"
+
 //needed for library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
@@ -18,10 +20,20 @@
 #include "settings.h"
 
 WiFiClient espClient;
+WiFiManager wifiManager;
 PubSubClient client(espClient);
 
-const char* ssid = "";
-const char* password = "";
+#define DHTPIN D2
+#define DHTTYPE DHT22
+
+// Initialize DHT sensor.
+// Note that older versions of this library took an optional third parameter to
+// tweak the timings for faster processors.  This parameter is no longer needed
+// as the current DHT reading algorithm adjusts itself to work on faster procs.
+DHT dht(DHTPIN, DHTTYPE);
+
+const char* ssid = "Nimh";
+const char* password = "77G3WWTF";
 // const char* ssid = "NimhNoT";
 // const char* password = "77G3PPTF";
 // const char* ssid = "NimhIoT";
@@ -49,6 +61,11 @@ const char* mqtt_server = "192.168.1.7";
 
 extern char mqtt_status[200] = "";
 extern char mqtt_cmnd[200] = "";
+extern char mqtt_temperature_humidity_status[200] = "";
+
+unsigned long currentTime;
+unsigned long lastRunTime = 0;
+unsigned long temperature_humidity_interval = 30000;
 
 PubSubClient* get_pubsub_client() {
   return &client;
@@ -85,6 +102,7 @@ void set_devicename(const char *name) {
   strncpy(devicename, name, strlen(name) + 1);
   sprintf(mqtt_status, "%s/blind/status", devicename);
   sprintf(mqtt_cmnd, "%s/blind/cmnd", devicename);
+  sprintf(mqtt_temperature_humidity_status, "%s/blind/temperature_humidity_status", devicename);
 }
 
 void set_opentime(uint32 t) {
@@ -131,6 +149,14 @@ void WifiSetup() {
     delay(5000);
     ESP.restart();
   }
+
+  // if (!wifiManager.autoConnect("PierceBlindControllerAP", "password")) {
+  //   Serial.println("failed to connect and hit timeout");
+  //   delay(3000);
+  //   //reset and try again, or maybe put it to deep sleep
+  //   ESP.reset();
+  //   delay(5000);
+  // }
 
   Serial.println(WiFi.SSID());
   Serial.println(WiFi.psk());
@@ -203,12 +229,57 @@ void load_config() {
     else
     {
       Serial.println("failed to open config file");
+      save_config();
     }    
+}
+
+void read_temperature() {
+
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float h = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+  float t = dht.readTemperature();
+  
+  if (isnan(h) || isnan(t)) {
+    client.publish(mqtt_temperature_humidity_status, "Failed reading dht sensor");
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" *C ");
+
+  char tmp[100];
+
+  sprintf(tmp, "%f\t%f", t, h);
+
+  client.publish(mqtt_temperature_humidity_status, tmp);
+      
+  // if (! temperature_status.publish(t)) {
+  //     Serial.println(F("Failed"));
+  // } else {
+  //     Serial.println(F("OK!"));
+  // }
+
+  // if (! humidity_status.publish(h)) {
+  //     Serial.println(F("Failed"));
+  // } else {
+  //     Serial.println(F("OK!"));
+  // }  
 }
 
 void setup() {
 
     Serial.begin(115200);
+
+    dht.begin();
+
+    pinMode(DHTPIN, INPUT_PULLUP);
 
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
@@ -267,7 +338,7 @@ void setup() {
         Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
     });
 
-    Serial.println("Flashing");
+    Serial.println("Flashing LEDS");
     for(int i=0; i <= 5; i++) {
       digitalWrite(LED, HIGH);
       delay(250);
@@ -286,7 +357,7 @@ void setup() {
 
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
+  if (!client.connected()) {
 
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
@@ -300,6 +371,7 @@ void reconnect() {
       // Once connected, publish an announcement...
 
       client.publish(mqtt_status, getBlindStatusText());
+
       // ... and resubscribe
       client.subscribe(mqtt_cmnd);
       Serial.println("mqtt subscribed to " + String(mqtt_cmnd));
@@ -312,6 +384,8 @@ void reconnect() {
       // Wait 5 seconds before retrying
       delay(5000);
     }
+
+    delay(100);
   }
 }
 
@@ -323,6 +397,14 @@ void loop() {
     }
 
     motorUpdate();
+
+    currentTime = millis();
+
+    if ((currentTime - lastRunTime) >= temperature_humidity_interval)
+    {
+      lastRunTime = currentTime;
+      read_temperature();
+    }
 
     fauxmo.handle();
 

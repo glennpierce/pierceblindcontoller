@@ -74,15 +74,15 @@ void stopBlind()
 
 void motorSetup() {
 
-    pinMode(OPEN_MOTOR, OUTPUT);
-    pinMode(CLOSE_MOTOR, OUTPUT);
+  pinMode(OPEN_MOTOR, OUTPUT);
+  pinMode(CLOSE_MOTOR, OUTPUT);
 
-    digitalWrite(OPEN_MOTOR, LOW);
-    digitalWrite(CLOSE_MOTOR, LOW);
+  digitalWrite(OPEN_MOTOR, LOW);
+  digitalWrite(CLOSE_MOTOR, LOW);
 }
 
 void motorUpdate() {
 
-    openTimer.update();
-    closeTimer.update();
+  openTimer.update();
+  closeTimer.update();
 }

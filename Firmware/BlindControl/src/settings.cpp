@@ -84,5 +84,6 @@ void serve() {
 
     server.onNotFound(notFound);
 
+    Serial.println("Webserver begin serving");
     server.begin();
 }
