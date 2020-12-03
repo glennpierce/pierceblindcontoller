@@ -4,7 +4,7 @@
 <head>
 	<meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
-  <title>Blind Settings</title>
+    <title>Blind Settings</title>
   
 	<script>
 	  var x = null,
@@ -39,13 +39,19 @@
 				<br/>
 				<input id='opentime' name='opentime' placeholder='%OPENTIME%' value='%OPENTIME%'>
 				<br/>
-				<br/> <b>Close Time (milli seconds)</b>
 				<br/>
-				<input id='closetime' name='closetime' placeholder='%CLOSETIME%' value='%CLOSETIME%'>
+				<b>Close Time (milli seconds)</b>
 				<br/>
-				<br/> <b>Device Name</b>
+				<input id='closetime' name='closetime' placeholder='%CLOSETIME%' value='%CLOSETIME%' />
 				<br/>
-        <input id='hostname' name='hostname' placeholder='%DEVICE_NAME%' value='%DEVICE_NAME%'>
+				<br/>
+				<b>Switch Buttons</b>
+				<input id='switch_buttons' name='switch_buttons' value="1" type="checkbox" %SWITCH_BUTTONS_CHECKED% />
+				<br/>
+				<br/>
+				<b>Device Name</b>
+				<br/>
+                <input id='hostname' name='hostname' placeholder='%DEVICE_NAME%' value='%DEVICE_NAME%'>
 				<br/>
 				<br/>
 				<button name='save' type='submit' class='button bgrn'>Save</button>
@@ -55,11 +61,11 @@
 		<br/>
 		<form method='POST' action='control'>
 			<br/>
-				<br/>
-        <button name='open' type='submit' class='button bgrn'>Open</button>
-        <br/>
-				<br/>
-				<button name='close' type='submit' class='button bgrn'>Close</button>
+			<br/>
+			<button name='open' type='submit' class='button bgrn'>Open</button>
+			<br/>
+			<br/>
+			<button name='close' type='submit' class='button bgrn'>Close</button>
 		</form>
 	</div>
 </body>

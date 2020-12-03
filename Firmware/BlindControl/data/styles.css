@@ -22,6 +22,10 @@ input {
     -moz-box-sizing: border-box;
 }
 
+#switch_buttons {
+    width: 10%;
+}
+
 select {
     width: 100%;
 }

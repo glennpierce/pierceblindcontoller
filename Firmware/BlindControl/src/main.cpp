@@ -2,12 +2,12 @@
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
-#include "DHT.h"
+#include <dht.h>
 
 //needed for library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
 
 #include <ArduinoOTA.h>
 #include <fauxmoESP.h>
@@ -23,14 +23,10 @@ WiFiClient espClient;
 WiFiManager wifiManager;
 PubSubClient client(espClient);
 
-#define DHTPIN D2
+#define DHTPIN 12
 #define DHTTYPE DHT22
 
-// Initialize DHT sensor.
-// Note that older versions of this library took an optional third parameter to
-// tweak the timings for faster processors.  This parameter is no longer needed
-// as the current DHT reading algorithm adjusts itself to work on faster procs.
-DHT dht(DHTPIN, DHTTYPE);
+dht DHT;
 
 const char* ssid = "Nimh";
 const char* password = "77G3WWTF";
@@ -52,6 +48,10 @@ bool failSafeMode = false;
 //flag for saving data
 bool shouldSaveConfig = false;
 
+static bool pin_flipped = false;
+static uint8 open_pin = 4;
+static uint8 close_pin = 5;
+
 static char devicename[40] = DEVICE_NAME;
 static uint32 opentime = 8000;
 static uint32 closetime = 8000;
@@ -69,6 +69,36 @@ unsigned long temperature_humidity_interval = 30000;
 
 PubSubClient* get_pubsub_client() {
   return &client;
+}
+
+void set_pin_flipped(bool flipped) 
+{
+  pin_flipped = flipped;
+}
+
+bool get_pin_flipped()
+{
+  return pin_flipped;
+}
+
+uint8 get_open_pin()
+{
+  if (pin_flipped == true) {
+    return close_pin;
+  }
+  else {
+    return open_pin;
+  }
+}
+
+uint8 get_close_pin()
+{
+  if (pin_flipped == true) {
+    return open_pin;
+  }
+  else {
+    return close_pin;
+  }
 }
 
 void mqtt_cmnd_callback(char* topic, byte* payload, unsigned int length) {
@@ -235,49 +265,32 @@ void load_config() {
 
 void read_temperature() {
 
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float h = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-  float t = dht.readTemperature();
-  
-  if (isnan(h) || isnan(t)) {
-    client.publish(mqtt_temperature_humidity_status, "Failed reading dht sensor");
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
+  int chk = DHT.read22(DHTPIN);
 
-  Serial.print("Humidity: ");
-  Serial.print(h);
-  Serial.print(" %\t");
-  Serial.print("Temperature: ");
-  Serial.print(t);
-  Serial.print(" *C ");
+  switch (chk)
+    {
+    case DHTLIB_OK:
+        client.publish(mqtt_temperature_humidity_status, "OK,\t");
+        break;
+    case DHTLIB_ERROR_CHECKSUM:
+        client.publish(mqtt_temperature_humidity_status, "Checksum error,\t");
+        break;
+    case DHTLIB_ERROR_TIMEOUT:
+        client.publish(mqtt_temperature_humidity_status, "Time out error,\t");
+        break;
+    default:
+        client.publish(mqtt_temperature_humidity_status, "Unknown error,\t");
+        break;
+    }
 
-  char tmp[100];
-
-  sprintf(tmp, "%f\t%f", t, h);
-
-  client.publish(mqtt_temperature_humidity_status, tmp);
-      
-  // if (! temperature_status.publish(t)) {
-  //     Serial.println(F("Failed"));
-  // } else {
-  //     Serial.println(F("OK!"));
-  // }
-
-  // if (! humidity_status.publish(h)) {
-  //     Serial.println(F("Failed"));
-  // } else {
-  //     Serial.println(F("OK!"));
-  // }  
+    char tmp[100];
+    sprintf(tmp, "%f\t%f", DHT.temperature, DHT.humidity);
+    client.publish(mqtt_temperature_humidity_status, tmp);
 }
 
 void setup() {
 
     Serial.begin(115200);
-
-    dht.begin();
 
     pinMode(DHTPIN, INPUT_PULLUP);
 
@@ -309,10 +322,10 @@ void setup() {
       return;
     }
 
-    pinMode(OPEN_MOTOR, OUTPUT);
-    pinMode(CLOSE_MOTOR, OUTPUT);
-    digitalWrite(OPEN_MOTOR, LOW);
-    digitalWrite(CLOSE_MOTOR, LOW);
+    pinMode(get_open_pin(), OUTPUT);
+    pinMode(get_close_pin(), OUTPUT);
+    digitalWrite(get_open_pin(), LOW);
+    digitalWrite(get_close_pin(), LOW);
 
     OTASetup();
 

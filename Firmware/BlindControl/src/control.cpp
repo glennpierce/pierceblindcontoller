@@ -11,7 +11,7 @@ static status_t status = STATUS_OPENED;
 
 static void openTimerEvent()
 {
-  digitalWrite(OPEN_MOTOR, LOW);
+  digitalWrite(get_open_pin(), LOW);
   digitalWrite(LED, LOW);
 
   status = STATUS_OPENED;
@@ -22,7 +22,7 @@ static void openTimerEvent()
 
 static void closeTimerEvent()
 {
-  digitalWrite(CLOSE_MOTOR, LOW);
+  digitalWrite(get_close_pin(), LOW);
   digitalWrite(LED, LOW);
 
   status = STATUS_CLOSED;
@@ -48,8 +48,8 @@ char* getBlindStatusText()
 
 void openBlind()
 {
-  digitalWrite(CLOSE_MOTOR, LOW);
-  digitalWrite(OPEN_MOTOR, HIGH);
+  digitalWrite(get_close_pin(), LOW);
+  digitalWrite(get_open_pin(), HIGH);
 }
 
 void stopOpenBlindAfterTime(long milli) {
@@ -58,8 +58,8 @@ void stopOpenBlindAfterTime(long milli) {
 
 void closeBlind()
 {
-  digitalWrite(CLOSE_MOTOR, HIGH);
-  digitalWrite(OPEN_MOTOR, LOW);
+  digitalWrite(get_close_pin(), HIGH);
+  digitalWrite(get_open_pin(), LOW);
 }
 
 void stopCloseBlindAfterTime(long milli) {
@@ -68,17 +68,17 @@ void stopCloseBlindAfterTime(long milli) {
 
 void stopBlind()
 {
-  digitalWrite(CLOSE_MOTOR, LOW);
-  digitalWrite(OPEN_MOTOR, LOW);
+  digitalWrite(get_close_pin(), LOW);
+  digitalWrite(get_open_pin(), LOW);
 }
 
 void motorSetup() {
 
-  pinMode(OPEN_MOTOR, OUTPUT);
-  pinMode(CLOSE_MOTOR, OUTPUT);
+  pinMode(get_open_pin(), OUTPUT);
+  pinMode(get_close_pin(), OUTPUT);
 
-  digitalWrite(OPEN_MOTOR, LOW);
-  digitalWrite(CLOSE_MOTOR, LOW);
+  digitalWrite(get_open_pin(), LOW);
+  digitalWrite(get_close_pin(), LOW);
 }
 
 void motorUpdate() {

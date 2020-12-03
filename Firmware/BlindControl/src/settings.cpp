@@ -26,6 +26,15 @@ String processor(const String& var) {
     char buf[12];
     return itoa(get_closetime(), buf, 10);
   }
+
+  if(var == "SWITCH_BUTTONS_CHECKED") {
+    if(get_pin_flipped()) {
+      return "checked";
+    }
+    else {
+      return "";
+    }
+  }
 }
 
 void notFound(AsyncWebServerRequest *request) {
@@ -58,6 +67,13 @@ void serve() {
             set_closetime(result.toInt());
         } 
         
+        if (request->hasParam("switch_buttons", true)) {
+            result = request->getParam("switch_buttons", true)->value();
+            if(result == "1") {
+              set_pin_flipped(true);
+            }
+        } 
+
         if (request->hasParam("hostname", true)) {
             result = request->getParam("hostname", true)->value();
             set_devicename(result.c_str());
@@ -72,9 +88,11 @@ void serve() {
         String message;
         if (request->hasParam("open", true)) {
           openBlind();
+          stopOpenBlindAfterTime(get_opentime());
         } 
         else if (request->hasParam("close", true)) {
           closeBlind();
+          stopCloseBlindAfterTime(get_closetime());
         }
         else {
             message = "No message sent";
