@@ -8,8 +8,8 @@
 
 #define FIRMWARE_VERSION "0.9"
 #define LED 16
-#define OPEN_BUTTON_PIN 13
-#define CLOSE_BUTTON_PIN 14
+#define OPEN_BUTTON_PIN 14
+#define CLOSE_BUTTON_PIN 13
 
 void set_devicename(const char *name);
 void set_opentime(uint32 t);

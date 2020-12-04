@@ -67,13 +67,8 @@ void serve() {
             set_closetime(result.toInt());
         } 
         
-        if (request->hasParam("switch_buttons", true)) {
-            result = request->getParam("switch_buttons", true)->value();
-            if(result == "1") {
-              set_pin_flipped(true);
-            }
-        } 
-
+        set_pin_flipped(request->hasArg("switch_buttons"));
+       
         if (request->hasParam("hostname", true)) {
             result = request->getParam("hostname", true)->value();
             set_devicename(result.c_str());
