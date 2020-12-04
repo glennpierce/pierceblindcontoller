@@ -28,7 +28,7 @@ String processor(const String& var) {
   }
 
   if(var == "SWITCH_BUTTONS_CHECKED") {
-    if(get_pin_flipped()) {
+    if(get_button_pin_flipped()) {
       return "checked";
     }
     else {
@@ -67,7 +67,7 @@ void serve() {
             set_closetime(result.toInt());
         } 
         
-        set_pin_flipped(request->hasArg("switch_buttons"));
+        set_button_pin_flipped(request->hasArg("switch_buttons"));
        
         if (request->hasParam("hostname", true)) {
             result = request->getParam("hostname", true)->value();
@@ -92,7 +92,8 @@ void serve() {
         else {
             message = "No message sent";
         }
-        request->send(SPIFFS, "/index.html", String(), false, processor);
+
+        request->redirect("/");
     });
 
     server.onNotFound(notFound);

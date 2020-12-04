@@ -71,34 +71,23 @@ PubSubClient* get_pubsub_client() {
   return &client;
 }
 
-void set_pin_flipped(bool flipped) 
+void set_button_pin_flipped(bool flipped) 
 {
   pin_flipped = flipped;
+
+  if(flipped) {
+    openButton = button_new(CLOSE_BUTTON_PIN);
+    closeButton = button_new(OPEN_BUTTON_PIN);
+  }
+  else {
+    openButton = button_new(OPEN_BUTTON_PIN);
+    closeButton = button_new(CLOSE_BUTTON_PIN);
+  }
 }
 
-bool get_pin_flipped()
+bool get_button_pin_flipped()
 {
   return pin_flipped;
-}
-
-uint8 get_open_pin()
-{
-  if (pin_flipped == true) {
-    return close_pin;
-  }
-  else {
-    return open_pin;
-  }
-}
-
-uint8 get_close_pin()
-{
-  if (pin_flipped == true) {
-    return open_pin;
-  }
-  else {
-    return close_pin;
-  }
 }
 
 void mqtt_cmnd_callback(char* topic, byte* payload, unsigned int length) {
@@ -233,6 +222,7 @@ void save_config() {
     doc["opentime"] = get_opentime();
     doc["closetime"] = get_closetime();
     doc["devicename"] = get_devicename();
+    doc["buttons_switched"] = get_button_pin_flipped();
 
     serializeJson(doc, Serial);
     serializeJson(doc, configFile);
@@ -254,6 +244,7 @@ void load_config() {
         set_opentime(doc["opentime"]);
         set_closetime(doc["closetime"]);
         set_devicename(doc["devicename"]);
+        set_button_pin_flipped(doc["buttons_switched"]);
       }
     }
     else
@@ -310,8 +301,14 @@ void setup() {
 
     WifiSetup();
 
-    openButton = button_new(OPEN_BUTTON_PIN);
-    closeButton = button_new(CLOSE_BUTTON_PIN);
+    if(get_button_pin_flipped()) {
+      openButton = button_new(CLOSE_BUTTON_PIN);
+      closeButton = button_new(OPEN_BUTTON_PIN);
+    }
+    else {
+      openButton = button_new(OPEN_BUTTON_PIN);
+      closeButton = button_new(CLOSE_BUTTON_PIN);
+    }
 
     BUTTON_EVENT openButtonStatus = checkButton(openButton);
     BUTTON_EVENT closeButtonStatus = checkButton(closeButton);
@@ -322,10 +319,10 @@ void setup() {
       return;
     }
 
-    pinMode(get_open_pin(), OUTPUT);
-    pinMode(get_close_pin(), OUTPUT);
-    digitalWrite(get_open_pin(), LOW);
-    digitalWrite(get_close_pin(), LOW);
+    pinMode(OPEN_DIR_MOTOR_PIN, OUTPUT);
+    pinMode(CLOSE_DIR_MOTOR_PIN, OUTPUT);
+    digitalWrite(OPEN_DIR_MOTOR_PIN, LOW);
+    digitalWrite(CLOSE_DIR_MOTOR_PIN, LOW);
 
     OTASetup();
 
