@@ -10,8 +10,10 @@ typedef enum
 
 void motorSetup();
 void motorUpdate();
-void openBlind();
-void closeBlind();
+bool openBlind(bool force);
+bool openBlindAndWait(bool force);
+bool closeBlind(bool force);
+bool closeBlindAndWait(bool force);
 status_t getBlindStatus();
 const char* getBlindStatusText();
 void stopOpenBlindAfterTime(long milli);

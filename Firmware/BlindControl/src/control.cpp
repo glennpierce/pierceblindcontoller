@@ -17,7 +17,7 @@ static void openTimerEvent()
   status = STATUS_OPENED;
 
   PubSubClient* client = get_pubsub_client();
-  client->publish(mqtt_status, "OPENED");
+  client->publish(mqtt_status, getBlindStatusText());
 }
 
 static void closeTimerEvent()
@@ -28,7 +28,7 @@ static void closeTimerEvent()
   status = STATUS_CLOSED;
 
   PubSubClient* client = get_pubsub_client();
-  client->publish(mqtt_status, "CLOSED");
+  client->publish(mqtt_status, getBlindStatusText());
 }
 
 status_t getBlindStatus()
@@ -46,20 +46,50 @@ const char* getBlindStatusText()
   }
 }
 
-void openBlind()
+bool openBlind(bool force)
 {
+  if(force== false && getBlindStatus() == STATUS_OPENED) {
+    return false;
+  }
+
   digitalWrite(CLOSE_DIR_MOTOR_PIN, LOW);
   digitalWrite(OPEN_DIR_MOTOR_PIN, HIGH);
+
+  return true;
+}
+
+bool openBlindAndWait(bool force)
+{
+  if(openBlind(force) == false) {
+    return false;
+  }
+  
+  stopOpenBlindAfterTime(get_opentime());  
 }
 
 void stopOpenBlindAfterTime(long milli) {
   openTimer.after(milli, openTimerEvent);
 }
 
-void closeBlind()
+bool closeBlind(bool force)
 {
+  if(force== false && getBlindStatus() == STATUS_CLOSED) {
+    return false;
+  }
+
   digitalWrite(CLOSE_DIR_MOTOR_PIN, HIGH);
   digitalWrite(OPEN_DIR_MOTOR_PIN, LOW);
+
+  return true;
+}
+
+bool closeBlindAndWait(bool force)
+{
+  if(closeBlind(force) == false) {
+    return false;
+  }
+
+  stopCloseBlindAfterTime(get_closetime());  
 }
 
 void stopCloseBlindAfterTime(long milli) {

@@ -108,12 +108,10 @@ void mqtt_cmnd_callback(char* topic, byte* payload, unsigned int length) {
   Serial.println(command);
 
   if(command.equals("open")) {
-    openBlind();
-    stopOpenBlindAfterTime(get_opentime());
+    openBlindAndWait(false);
   }
   else if(command.equals("close")) {
-    closeBlind();
-    stopCloseBlindAfterTime(get_closetime());  
+    closeBlindAndWait(false);
   }
 }
 
@@ -337,12 +335,10 @@ void setup() {
     fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
         
         if(state) {
-          openBlind();
-          stopOpenBlindAfterTime(get_opentime());
+          openBlindAndWait(false);
         }
         else {
-          closeBlind();
-          stopCloseBlindAfterTime(get_closetime());
+          closeBlindAndWait(false);
         }
 
         Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
@@ -380,7 +376,7 @@ void reconnect() {
       Serial.println("mqtt connected");
       // Once connected, publish an announcement...
 
-      client.publish(mqtt_status, getBlindStatusText());
+      client.publish(mqtt_status, "Mqtt Connected");
 
       // ... and resubscribe
       client.subscribe(mqtt_cmnd);
@@ -408,13 +404,13 @@ void loop() {
 
     motorUpdate();
 
-    currentTime = millis();
+    // currentTime = millis();
 
-    if ((currentTime - lastRunTime) >= temperature_humidity_interval)
-    {
-      lastRunTime = currentTime;
-      read_temperature();
-    }
+    // if ((currentTime - lastRunTime) >= temperature_humidity_interval)
+    // {
+    //   lastRunTime = currentTime;
+    //   read_temperature();
+    // }
 
     fauxmo.handle();
 
@@ -427,18 +423,14 @@ void loop() {
     BUTTON_EVENT status = checkButton(openButton);
 
     if(status == CLICK) {
-
-      if(getBlindStatus() != STATUS_OPENED) {
-        digitalWrite(LED, HIGH);
-        openBlind();
-        Serial.println("Open clicked");
-        stopOpenBlindAfterTime(get_opentime());
-      }
+      digitalWrite(LED, HIGH);
+      Serial.println("Open clicked");
+      openBlindAndWait(false);
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Open long hold");
       digitalWrite(LED, HIGH);
-      openBlind();
+      openBlind(true);
     }
     else if(status == HOLD_RELEASE || status == LONG_HOLD_RELEASE) {
       Serial.println("Stopping motor");
@@ -449,18 +441,14 @@ void loop() {
     status = checkButton(closeButton);
 
     if(status == CLICK) {
-      if(getBlindStatus() != STATUS_CLOSED) {
-        digitalWrite(LED, HIGH);
-        closeBlind();
-
-        Serial.println("Close clicked");
-        stopCloseBlindAfterTime(get_closetime());
-      }
+      digitalWrite(LED, HIGH);
+      Serial.println("Close clicked");
+      closeBlindAndWait(false);
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Close long hold");
       digitalWrite(LED, HIGH);
-      closeBlind();
+      closeBlind(true);
     }
     else if(status == HOLD_RELEASE || status == LONG_HOLD_RELEASE) {
       Serial.println("Stopping motor");

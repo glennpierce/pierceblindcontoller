@@ -82,11 +82,11 @@ void serve() {
 
         String message;
         if (request->hasParam("open", true)) {
-          openBlind();
+          openBlind(false);
           stopOpenBlindAfterTime(get_opentime());
         } 
         else if (request->hasParam("close", true)) {
-          closeBlind();
+          closeBlind(false);
           stopCloseBlindAfterTime(get_closetime());
         }
         else {
