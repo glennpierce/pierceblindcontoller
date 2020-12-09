@@ -49,8 +49,6 @@ bool failSafeMode = false;
 bool shouldSaveConfig = false;
 
 static bool pin_flipped = false;
-static uint8 open_pin = 4;
-static uint8 close_pin = 5;
 
 static char devicename[40] = DEVICE_NAME;
 static uint32 opentime = 8000;
@@ -104,6 +102,9 @@ void mqtt_cmnd_callback(char* topic, byte* payload, unsigned int length) {
   memcpy(tmp, payload, length);
   String command = String(tmp);
   command.toLowerCase();  
+
+  // causes loop ?
+  // client.publish(mqtt_status, command.c_str());
 
   Serial.println(command);
 
@@ -299,6 +300,10 @@ void setup() {
 
     WifiSetup();
 
+    // if (WiFi.status() != WL_CONNECTED) {  
+    //     WifiSetup();
+    // }  
+
     if(get_button_pin_flipped()) {
       openButton = button_new(CLOSE_BUTTON_PIN);
       closeButton = button_new(OPEN_BUTTON_PIN);
@@ -334,6 +339,11 @@ void setup() {
 
     fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
         
+        char tmp[100] = "";
+        sprintf(tmp, "%d - %s -%d - %d", device_id, device_name, state, value);
+
+        client.publish(mqtt_status, tmp);
+
         if(state) {
           openBlindAndWait(false);
         }
@@ -381,6 +391,8 @@ void reconnect() {
       // ... and resubscribe
       client.subscribe(mqtt_cmnd);
       Serial.println("mqtt subscribed to " + String(mqtt_cmnd));
+
+      delay(1000);
 
     } else {
 
