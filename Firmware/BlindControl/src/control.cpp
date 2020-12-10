@@ -65,6 +65,8 @@ bool openBlindAndWait(bool force)
   }
   
   stopOpenBlindAfterTime(get_opentime());  
+
+  return true;
 }
 
 void stopOpenBlindAfterTime(long milli) {
@@ -90,6 +92,8 @@ bool closeBlindAndWait(bool force)
   }
 
   stopCloseBlindAfterTime(get_closetime());  
+
+  return true;
 }
 
 void stopCloseBlindAfterTime(long milli) {

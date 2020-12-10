@@ -28,10 +28,10 @@ PubSubClient client(espClient);
 
 dht DHT;
 
-const char* ssid = "Nimh";
-const char* password = "77G3WWTF";
-// const char* ssid = "NimhNoT";
-// const char* password = "77G3PPTF";
+// const char* ssid = "Nimh";
+// const char* password = "77G3WWTF";
+const char* ssid = "NimhNoT";
+const char* password = "77G3PPTF";
 // const char* ssid = "NimhIoT";
 // const char* password = "746GDT42";
 
@@ -435,9 +435,10 @@ void loop() {
     BUTTON_EVENT status = checkButton(openButton);
 
     if(status == CLICK) {
-      digitalWrite(LED, HIGH);
       Serial.println("Open clicked");
-      openBlindAndWait(false);
+      if(openBlindAndWait(false)) {
+        digitalWrite(LED, HIGH);
+      }
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Open long hold");
@@ -453,9 +454,10 @@ void loop() {
     status = checkButton(closeButton);
 
     if(status == CLICK) {
-      digitalWrite(LED, HIGH);
       Serial.println("Close clicked");
-      closeBlindAndWait(false);
+      if(closeBlindAndWait(false)) {
+        digitalWrite(LED, HIGH);
+      }
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Close long hold");
