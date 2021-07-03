@@ -4,7 +4,7 @@
 
 #include <dht.h>
 
-//needed for library
+// needed for library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
@@ -282,6 +282,8 @@ void setup() {
 
     Serial.begin(115200);
 
+    setupMcb23017();
+    
     pinMode(DHTPIN, INPUT_PULLUP);
 
     pinMode(LED, OUTPUT);
@@ -322,10 +324,10 @@ void setup() {
       return;
     }
 
-    pinMode(OPEN_DIR_MOTOR_PIN, OUTPUT);
-    pinMode(CLOSE_DIR_MOTOR_PIN, OUTPUT);
-    digitalWrite(OPEN_DIR_MOTOR_PIN, LOW);
-    digitalWrite(CLOSE_DIR_MOTOR_PIN, LOW);
+    // pinMode(OPEN_DIR_MOTOR_PIN, OUTPUT);
+    // pinMode(CLOSE_DIR_MOTOR_PIN, OUTPUT);
+    // digitalWrite(OPEN_DIR_MOTOR_PIN, LOW);
+    // digitalWrite(CLOSE_DIR_MOTOR_PIN, LOW);
 
     OTASetup();
 
@@ -436,18 +438,14 @@ void loop() {
 
     if(status == CLICK) {
       Serial.println("Open clicked");
-      if(openBlindAndWait(false)) {
-        digitalWrite(LED, HIGH);
-      }
+      openBlindAndWait(false);
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Open long hold");
-      digitalWrite(LED, HIGH);
       openBlind(true);
     }
     else if(status == HOLD_RELEASE || status == LONG_HOLD_RELEASE) {
       Serial.println("Stopping motor");
-      digitalWrite(LED, LOW);
       stopBlind();
     }
 
@@ -455,18 +453,14 @@ void loop() {
 
     if(status == CLICK) {
       Serial.println("Close clicked");
-      if(closeBlindAndWait(false)) {
-        digitalWrite(LED, HIGH);
-      }
+      closeBlindAndWait(false);
     }
     else if(status == HOLD || status == LONG_HOLD) {
       Serial.println("Close long hold");
-      digitalWrite(LED, HIGH);
       closeBlind(true);
     }
     else if(status == HOLD_RELEASE || status == LONG_HOLD_RELEASE) {
       Serial.println("Stopping motor");
-      digitalWrite(LED, LOW);
       stopBlind();
     }
 

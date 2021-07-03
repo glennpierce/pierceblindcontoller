@@ -3,7 +3,25 @@
 #include "control.h"
 #include "settings.h"
 
+#include <CircularBuffer.h>
+
 AsyncWebServer server(81);
+
+CircularBuffer<String,10> buffer;
+
+void logger(const char* s) {
+  buffer.push(String(millis()) + ": " + String(s));
+}
+
+String get_log() {
+  String s = "";
+  const uint8_t len = buffer.size();
+  for (uint8_t i = 0; i < len; i++) {
+    s.concat(buffer[i]);
+    s.concat("<br>");
+  }
+  return s;
+}
 
 String processor(const String& var) {
 
@@ -35,6 +53,10 @@ String processor(const String& var) {
       return "";
     }
   }
+
+  if(var == "LOG") {
+    return get_log();
+  }
 }
 
 void notFound(AsyncWebServerRequest *request) {
@@ -52,6 +74,18 @@ void serve() {
 
     server.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(SPIFFS, "/styles.css", String(), false);
+    });
+
+    server.on("/log", HTTP_GET, [](AsyncWebServerRequest *request){
+        // String s = "";
+        // const uint8_t len = buffer.size();
+        // for (uint8_t i = 0; i < len; i++) {
+        //   s.concat(buffer[i]);
+        //   s.concat("<br>");
+        // }
+        // request->send(200, "text/plain", s);
+
+        request->send(SPIFFS, "/log.html", String(), false, processor);
     });
 
     // Send a POST request to <IP>/post with a form field message set to <message>

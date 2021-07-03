@@ -4,5 +4,6 @@
 
 void serve();
 void save_config();
+void logger(const char* s);
 
 #endif
