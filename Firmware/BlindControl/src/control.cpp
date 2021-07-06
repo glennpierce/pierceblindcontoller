@@ -5,7 +5,7 @@
 #include "Timer.h"
 #include "control.h"
 
-#include <Wire.h>
+// #include <Wire.h>
 #include <MCP23017.h>
 
 MCP23017 mcp = MCP23017(0x20);
@@ -37,120 +37,59 @@ static String Misc_DecTo8bitBinary(int dec) {
  return result;
 }
 
-// static void turn_off_n1g_and_n2g() {
-
-//   mcp.digitalWrite(N1G, NCHANNEL_OFF);
-//   delay(1); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
-//             // on at once
-
-//   mcp.digitalWrite(N2G, NCHANNEL_OFF);
-//   delay(1);
-
-//   Serial.println("turn_off_n1g_and_n2g");
-
-//   // Serial.println("turn_off_n1g_and_n2g:" + Misc_DecTo8bitBinary(hbridge_state));
-// }
-
-// static void turn_off_p1g_and_p2g() {
-//   // BIT_SET(hbridge_state, 1);
-//   // mcp.writePort(MCP23017Port::A, hbridge_state);
-//   mcp.digitalWrite(P1G, PCHANNEL_OFF);
-//   delay(1);
-//   mcp.digitalWrite(P2G, PCHANNEL_OFF);
-//   delay(1);
-
-//   Serial.println("turn_off_p1g_and_p2g");
-// }
-
 static void turn_off_hbridge() {
-  // turn_off_n1g_and_n2g();
-  // turn_off_p1g_and_p2g();
+
+  mcp.digitalWrite(P1G, PCHANNEL_OFF);
+  delay(50); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
+             // on at once
+
+  mcp.digitalWrite(P2G, PCHANNEL_OFF);
+  delay(50);
 
   mcp.digitalWrite(N1G, NCHANNEL_OFF);
-  delay(10); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
+  delay(50); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
             // on at once
 
   mcp.digitalWrite(N2G, NCHANNEL_OFF);
-  delay(10);
-
-  mcp.digitalWrite(P1G, PCHANNEL_OFF);
-  delay(10); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
-            // on at once
-
-  mcp.digitalWrite(P2G, PCHANNEL_OFF);
-  delay(10);
+  delay(50);
 
   Serial.println("turn_off_hbridge");
 }
 
-
-// Turn motor direction 1
-// static  void turn_on_n1g_and_p2g() {
-
-//   turn_off_hbridge();
-
-//   mcp.digitalWrite(N1G, NCHANNEL_ON);   // n channel n1g
-//   delay(1); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
-
-//   mcp.digitalWrite(P2G, PCHANNEL_ON);
-//   delay(1);
-
-//   Serial.println("turn_on_n1g_and_p2g");
-//   logger("turn_on_n1g_and_p2g");
-// }
-
-// // Turn motor direction 2
-// static void turn_on_n2g_and_p1g() {
-
-//   turn_off_hbridge();
-
-//   mcp.digitalWrite(N2G, NCHANNEL_ON);
-//   delay(1);
-
-//   mcp.digitalWrite(P1G, PCHANNEL_ON);
-//   delay(1);
-
-//   Serial.println("turn_on_n2g_and_p1g");
-//   logger("turn_on_n2g_and_p1g");
-// }
-
-
 static void turn_on_hbridge_dir1() {
 
-  // turn_off_hbridge();
-
   mcp.digitalWrite(P1G, PCHANNEL_OFF);
-  delay(10);
+  delay(50);
 
   mcp.digitalWrite(N2G, NCHANNEL_OFF);   // n channel n1g
-  delay(10); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
+  delay(50); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
 
   mcp.digitalWrite(N1G, NCHANNEL_ON);   // n channel n1g
-  delay(10);
+  delay(50);
 
   mcp.digitalWrite(P2G, PCHANNEL_ON);
-  delay(10);
+  delay(50);
 
   Serial.println("turn_on_hbridge_dir1");
   logger("turn_on_hbridge_dir1");
 }
 
 
-static  void turn_on_hbridge_dir2() {
+static void turn_on_hbridge_dir2() {
 
   // turn_off_hbridge();
 
-  mcp.digitalWrite(N1G, NCHANNEL_OFF);   // n channel n1g
-  delay(10);
-
   mcp.digitalWrite(P2G, PCHANNEL_OFF);
-  delay(10);
+  delay(50);
+
+  mcp.digitalWrite(N1G, NCHANNEL_OFF);   // n channel n1g
+  delay(50);
 
   mcp.digitalWrite(P1G, PCHANNEL_ON);
-  delay(10);
+  delay(50);
 
   mcp.digitalWrite(N2G, NCHANNEL_ON);   // n channel n1g
-  delay(10); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
+  delay(50); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
 
   Serial.println("turn_on_hbridge_dir2");
   logger("turn_on_hbridge_dir2");
@@ -202,7 +141,6 @@ bool openBlind(bool force)
   }
 
   digitalWrite(LED, HIGH);
-  // turn_on_n2g_and_p1g();
   turn_on_hbridge_dir1();
   logger("openBlind");
 
@@ -232,7 +170,6 @@ bool closeBlind(bool force)
   }
 
   digitalWrite(LED, HIGH);
-  // turn_on_n1g_and_p2g();
   turn_on_hbridge_dir2();
   logger("closeBlind");
 
@@ -257,16 +194,14 @@ void stopCloseBlindAfterTime(long milli) {
 
 void setupMcb23017()
 {
-  Wire.begin();
+  // Wire.begin();
   mcp.init();
 
   mcp.portMode(MCP23017Port::A, 0);          // Port A as output
   mcp.portMode(MCP23017Port::B, 0); 
   mcp.writeRegister(MCP23017Register::GPIO_A, 0x00);  // Reset port A 
   mcp.writeRegister(MCP23017Register::GPIO_B, 0x00);  // Reset port B
-  // mcp.writePort(MCP23017Port::A, 0b00001010);
-  // mcp.writePort(MCP23017Port::A, 0b00000000);
-  // mcp.writePort(MCP23017Port::A, 0b00000101);
+  mcp.writePort(MCP23017Port::A, 0b00000101);
   mcp.writePort(MCP23017Port::B, 0b00000000);
 
   turn_off_hbridge();
@@ -275,8 +210,6 @@ void setupMcb23017()
 void stopBlind()
 {
    turn_off_hbridge();
-
-
    digitalWrite(LED, LOW);
 }
 
