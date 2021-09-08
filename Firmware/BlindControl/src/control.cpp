@@ -5,103 +5,58 @@
 #include "Timer.h"
 #include "control.h"
 
-// #include <Wire.h>
-#include <MCP23017.h>
-
-MCP23017 mcp = MCP23017(0x20);
-
+Timer eventTimer;
 Timer openTimer;
 Timer closeTimer;
 
-#define BIT_SET(a,b) ((a) |= (1ULL<<(b)))
-#define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
-#define BIT_FLIP(a,b) ((a) ^= (1ULL<<(b)))
-#define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))        // '!!' to make sure this returns 0 or 1
+void turn_off_hbridge() {
 
-#define N1G 0
-#define P1G 1
-#define N2G 2
-#define P2G 3
-
-#define NCHANNEL_ON 0  // Opto is 0 Therefore Reciever is pulled high NChannel so on
-#define NCHANNEL_OFF 1 // Opto is 1 Therefore Reciever is pulled low NChannel so off
-
-#define PCHANNEL_ON 1  // Opto is 1 Therefore Reciever is pulled low PChannel so on
-#define PCHANNEL_OFF 0 // Opto is 0 Therefore Reciever is pulled high 0 PChannel so off
-
-static String Misc_DecTo8bitBinary(int dec) {
- String result = "";
- for (unsigned int i = 0x80; i; i >>= 1) {
- result.concat(dec  & i ? '1' : '0');
- }
- return result;
-}
-
-static void turn_off_hbridge() {
-
-  mcp.digitalWrite(P1G, PCHANNEL_OFF);
-  delay(50); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
-             // on at once
-
-  mcp.digitalWrite(P2G, PCHANNEL_OFF);
-  delay(50);
-
-  mcp.digitalWrite(N1G, NCHANNEL_OFF);
-  delay(50); // Delay for a millisecond. Lets try to avoid situation where two mosfets are turned
-            // on at once
-
-  mcp.digitalWrite(N2G, NCHANNEL_OFF);
-  delay(50);
+  digitalWrite(LED, LOW);
+  digitalWrite(DIS, HIGH);
+  analogWrite(PWM, 0);
 
   Serial.println("turn_off_hbridge");
+  logger("turn_off_hbridge");
 }
 
-static void turn_on_hbridge_dir1() {
+static void turn_on_hbridge_cw() {
 
-  mcp.digitalWrite(P1G, PCHANNEL_OFF);
-  delay(50);
+  digitalWrite(LED, HIGH);
+  digitalWrite(DIR, CW);
+  analogWrite(PWM, PWMRANGE);
+  digitalWrite(DIS, LOW);
 
-  mcp.digitalWrite(N2G, NCHANNEL_OFF);   // n channel n1g
-  delay(50); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
-
-  mcp.digitalWrite(N1G, NCHANNEL_ON);   // n channel n1g
-  delay(50);
-
-  mcp.digitalWrite(P2G, PCHANNEL_ON);
-  delay(50);
-
-  Serial.println("turn_on_hbridge_dir1");
-  logger("turn_on_hbridge_dir1");
+  Serial.println("turn_on_hbridge_cw");
+  logger("turn_on_hbridge_cw");
 }
 
 
-static void turn_on_hbridge_dir2() {
+static void turn_on_hbridge_ccw() {
 
-  // turn_off_hbridge();
+  digitalWrite(LED, HIGH);
+  digitalWrite(DIR, CCW);
+  analogWrite(PWM, PWMRANGE);
+  digitalWrite(DIS, LOW);
 
-  mcp.digitalWrite(P2G, PCHANNEL_OFF);
-  delay(50);
-
-  mcp.digitalWrite(N1G, NCHANNEL_OFF);   // n channel n1g
-  delay(50);
-
-  mcp.digitalWrite(P1G, PCHANNEL_ON);
-  delay(50);
-
-  mcp.digitalWrite(N2G, NCHANNEL_ON);   // n channel n1g
-  delay(50); // Delay 1 ms rise fall time of opto can't be more than 10-100 us
-
-  Serial.println("turn_on_hbridge_dir2");
-  logger("turn_on_hbridge_dir2");
+  Serial.println("turn_on_hbridge_ccw");
+  logger("turn_on_hbridge_ccw");
 }
 
 static status_t status = STATUS_OPENED;
 
+static void checkFaultEvent()
+{
+  int err = digitalRead(ERROR);
+
+  if (err == 0) {
+    logger("max14871 error overcurrent or thermal shutdown");
+  }
+}
+
 static void openTimerEvent()
 {
   stopBlind();
-  digitalWrite(LED, LOW);
-
+  
   status = STATUS_OPENED;
 
   PubSubClient* client = get_pubsub_client();
@@ -111,7 +66,6 @@ static void openTimerEvent()
 static void closeTimerEvent()
 {
   stopBlind();
-  digitalWrite(LED, LOW);
 
   status = STATUS_CLOSED;
 
@@ -140,8 +94,7 @@ bool openBlind(bool force)
     return false;
   }
 
-  digitalWrite(LED, HIGH);
-  turn_on_hbridge_dir1();
+  turn_on_hbridge_cw();
   logger("openBlind");
 
   return true;
@@ -153,7 +106,6 @@ bool openBlindAndWait(bool force)
     return false;
   }
   
-  digitalWrite(LED, HIGH);
   stopOpenBlindAfterTime(get_opentime());  
 
   return true;
@@ -169,8 +121,7 @@ bool closeBlind(bool force)
     return false;
   }
 
-  digitalWrite(LED, HIGH);
-  turn_on_hbridge_dir2();
+  turn_on_hbridge_ccw();
   logger("closeBlind");
 
   return true;
@@ -182,7 +133,6 @@ bool closeBlindAndWait(bool force)
     return false;
   }
 
-  digitalWrite(LED, HIGH);
   stopCloseBlindAfterTime(get_closetime());  
 
   return true;
@@ -192,29 +142,18 @@ void stopCloseBlindAfterTime(long milli) {
   closeTimer.after(milli, closeTimerEvent);
 }
 
-void setupMcb23017()
-{
-  // Wire.begin();
-  mcp.init();
-
-  mcp.portMode(MCP23017Port::A, 0);          // Port A as output
-  mcp.portMode(MCP23017Port::B, 0); 
-  mcp.writeRegister(MCP23017Register::GPIO_A, 0x00);  // Reset port A 
-  mcp.writeRegister(MCP23017Register::GPIO_B, 0x00);  // Reset port B
-  mcp.writePort(MCP23017Port::A, 0b00000101);
-  mcp.writePort(MCP23017Port::B, 0b00000000);
-
-  turn_off_hbridge();
+void stopBlind() {
+   turn_off_hbridge();
 }
 
-void stopBlind()
-{
-   turn_off_hbridge();
-   digitalWrite(LED, LOW);
+void motorSetup() {
+  turn_off_hbridge();
+  eventTimer.every(1000, checkFaultEvent);
 }
 
 void motorUpdate() {
 
+  eventTimer.update();
   openTimer.update();
   closeTimer.update();
 }

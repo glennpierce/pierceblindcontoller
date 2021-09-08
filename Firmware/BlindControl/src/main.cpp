@@ -282,11 +282,15 @@ void setup() {
 
     Serial.begin(115200);
 
-    setupMcb23017();
+    motorSetup();
     
     pinMode(DHTPIN, INPUT_PULLUP);
-
+    pinMode(ERROR, INPUT_PULLUP);
     pinMode(LED, OUTPUT);
+    pinMode(PWM, OUTPUT);
+    pinMode(DIS, OUTPUT);
+    pinMode(DIR, OUTPUT);
+
     digitalWrite(LED, HIGH);
     delay(2000);
     digitalWrite(LED, LOW);

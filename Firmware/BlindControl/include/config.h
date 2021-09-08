@@ -8,6 +8,13 @@
 
 #define FIRMWARE_VERSION "0.9"
 #define LED 16
+#define DIS 2
+#define PWM 4
+#define DIR 5
+#define ERROR 12
+#define CW 1
+#define CCW 0
+
 #define OPEN_BUTTON_PIN 13
 #define CLOSE_BUTTON_PIN 14
 

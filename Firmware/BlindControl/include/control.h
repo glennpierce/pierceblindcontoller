@@ -8,7 +8,7 @@ typedef enum
   STATUS_OPENED = 1
 } status_t;
 
-void setupMcb23017();
+void turn_off_hbridge();
 void motorSetup();
 void motorUpdate();
 bool openBlind(bool force);
