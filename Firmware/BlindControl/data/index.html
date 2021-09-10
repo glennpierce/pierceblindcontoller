@@ -1,77 +1,73 @@
-﻿<!DOCTYPE html>
-<html lang="en" class="">
+﻿<html>
+    <head>
+        <link rel="stylesheet" href="/index.css">
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+    
+        <div id="app">
+            <div style='text-align:left;display:inline-block;min-width:340px;'>
+				<div style='text-align:center;'>
+					<noscript>To use Blind, please enable JavaScript</noscript>
+					<h3>Glenn Pierce Blind Module Version: [[firmware]]</h3>
+					<h2>Blind [[devicename]]</h2>
+				</div>
+				<br/>
+				<h2>Uptime: [[uptime]] seconds</h2>
+				<br />
+				<fieldset>
+					<legend> <b>&nbsp;Settings&nbsp;</b> </legend>
+					<form method='POST' action='/'>
+						<br/> <b>Open Time (milli seconds)</b>
+						<br/>
+						<input v-model="opentime" id='opentime' name="opentime" />
+						<br/>
+						<br/>
+						<b>Close Time (milli seconds)</b>
+						<br/>
+						<input v-model='closetime' name='closetime' />
+						<br/>
+						<br/>
+						<b>Switch Buttons (Physical Buttons)</b>
+						<input v-model="buttons_switched" id='buttons_switched' name='buttons_switched' type="checkbox" />
+						<br/>
+						<br/>
+						<b>Speed</b>
+						<input v-model="speed" id='speed' name='speed' type="range" min="1" max="100" />
+						<br/>
+						<br/>
+						<b>Device Name</b>
+						<br/>
+						<input v-model="devicename" id='devicename' name='devicename' />
+						<br/>
+						<br/>
+						<button name='save' type='submit' class='button bgrn'>Save</button>
+					</form>
+				</fieldset>
 
-<head>
-	<meta charset='utf-8'>
-	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
-    <title>Blind Settings</title>
-  
-	<script>
-	  var x = null,
-		lt, to, tp, pc = '';
+				<!-- v-on:click="onSave" -->
 
-    function eb(s) {
-      return document.getElementById(s);
-    }
+				<br/>
+				<fieldset>
+					<legend> <b>&nbsp;Log&nbsp;</b> </legend>
+					<div v-html="log">
+					</div>
+				</fieldset>
+				<br/>
+	
+				<br/>
+				<br/>
+				[[ timerCount ]]
+				<button v-on:click="onOpen" :disabled="isMoving || isOpened" name='open' class='button bgrn'>Open</button>
+				<br/>
+				<br/>
+				<button v-on:click="onClose" :disabled="isMoving || isClosed" name='close' class='button bgrn'>Close</button>
+		
+			</div>
+        </div>
 
-    function c(l) {
-      eb('s1').value = l.innerText || l.textContent;
-      eb('p1').focus();
-    }
-  </script>
-  
-  <link rel="stylesheet" href="styles.css">
-  
-</head>
+		<script src="index.js"></script>
 
-<body>
-	<div style='text-align:left;display:inline-block;min-width:340px;'>
-		<div style='text-align:center;'>
-			<noscript>To use Blind, please enable JavaScript
-				<br/> </noscript>
-			<h3>Glenn Pierce Blind Module Version: %VERSION%</h3>
-			<h2>Blind (%DEVICE_NAME%)</h2> </div>
-		<br/>
-		<fieldset>
-			<legend> <b>&nbsp;Settings&nbsp;</b> </legend>
-			<form method='POST' action='/'>
-				<br/> <b>Open Time (milli seconds)</b>
-				<br/>
-				<input id='opentime' name='opentime' placeholder='%OPENTIME%' value='%OPENTIME%'>
-				<br/>
-				<br/>
-				<b>Close Time (milli seconds)</b>
-				<br/>
-				<input id='closetime' name='closetime' placeholder='%CLOSETIME%' value='%CLOSETIME%' />
-				<br/>
-				<br/>
-				<b>Switch Buttons</b>
-				<input id='switch_buttons' name='switch_buttons' type="checkbox" %SWITCH_BUTTONS_CHECKED% />
-				<br/>
-				<br/>
-				<b>Device Name</b>
-				<br/>
-                <input id='hostname' name='hostname' placeholder='%DEVICE_NAME%' value='%DEVICE_NAME%'>
-				<br/>
-				<br/>
-				<button name='save' type='submit' class='button bgrn'>Save</button>
-			</form>
-		</fieldset>
-		<br/>
-		<fieldset>
-			<legend> <b>&nbsp;Log&nbsp;</b> </legend>
-			<iframe src="/log" frameBorder="0"></iframe>
-		</fieldset>
-		<br/>
-		<form method='POST' action='control'>
-			<br/>
-			<br/>
-			<button name='open' type='submit' class='button bgrn'>Open</button>
-			<br/>
-			<br/>
-			<button name='close' type='submit' class='button bgrn'>Close</button>
-		</form>
-	</div>
-</body>
-
+    </body>
 </html>

@@ -53,6 +53,7 @@ static bool pin_flipped = false;
 static char devicename[40] = DEVICE_NAME;
 static uint32 opentime = 8000;
 static uint32 closetime = 8000;
+static uint32 speed = 80;
 static char hostname[24] = "";
 
 const char* mqtt_server = "192.168.1.7";
@@ -133,6 +134,11 @@ void set_closetime(uint32 t) {
   Serial.println("Setting closetime to " + String(closetime));
 }
 
+void set_speed(uint32 t) {
+  speed = t;
+  Serial.println("Setting speed to " + String(speed));
+}
+
 const char* get_devicename()
 {
   return devicename;
@@ -146,6 +152,11 @@ uint32 get_opentime() {
 uint32 get_closetime() {
   Serial.println("Getting closetime: " + String(closetime));
   return closetime;
+}
+
+uint32 get_speed() {
+  Serial.println("Getting speed: " + String(speed));
+  return speed;
 }
 
 void WifiSetup() {
@@ -222,6 +233,7 @@ void save_config() {
     doc["closetime"] = get_closetime();
     doc["devicename"] = get_devicename();
     doc["buttons_switched"] = get_button_pin_flipped();
+    doc["speed"] = get_speed();
 
     serializeJson(doc, Serial);
     serializeJson(doc, configFile);
@@ -244,6 +256,7 @@ void load_config() {
         set_closetime(doc["closetime"]);
         set_devicename(doc["devicename"]);
         set_button_pin_flipped(doc["buttons_switched"]);
+        set_speed(doc["speed"]);
       }
     }
     else
@@ -278,6 +291,26 @@ void read_temperature() {
     client.publish(mqtt_temperature_humidity_status, tmp);
 }
 
+static void ICACHE_RAM_ATTR handleErrorInterrupt() {
+
+  // digitalWrite(DIS, HIGH);
+  // analogWrite(PWM, 0);
+  // digitalWrite(LED, LOW);
+
+  Serial.println("Error Interrupt");
+  turn_off_hbridge();
+  stopTimers();
+  logger("max14871 error overcurrent or thermal shutdown");
+
+  // Serial.println("Flashing ERROR LEDS");
+  // for(int i=0; i <= 8; i++) {
+  //   digitalWrite(LED, HIGH);
+  //   delay(350);
+  //   digitalWrite(LED, LOW);
+  //   delay(350);
+  // }
+}
+
 void setup() {
 
     Serial.begin(115200);
@@ -290,6 +323,8 @@ void setup() {
     pinMode(PWM, OUTPUT);
     pinMode(DIS, OUTPUT);
     pinMode(DIR, OUTPUT);
+
+    attachInterrupt(digitalPinToInterrupt(ERROR), handleErrorInterrupt, FALLING);
 
     digitalWrite(LED, HIGH);
     delay(2000);
@@ -414,6 +449,8 @@ void reconnect() {
 }
 
 void loop() {
+
+    ws_loop();
 
     if(failSafeMode) {
       ArduinoOTA.handle();

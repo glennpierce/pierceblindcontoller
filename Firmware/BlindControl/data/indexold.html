@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+	<meta charset='utf-8'>
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+    <title>Blind Settings</title>
+  
+	<script>
+	  var x = null,
+		lt, to, tp, pc = '';
+
+    function eb(s) {
+      return document.getElementById(s);
+    }
+
+    function c(l) {
+      eb('s1').value = l.innerText || l.textContent;
+      eb('p1').focus();
+    }
+  </script>
+  
+  <link rel="stylesheet" href="styles.css">
+  
+</head>
+
+<body>
+	<div style='text-align:left;display:inline-block;min-width:340px;'>
+		<div style='text-align:center;'>
+			<noscript>To use Blind, please enable JavaScript
+				<br/> </noscript>
+			<h3>Glenn Pierce Blind Module Version: %VERSION%</h3>
+			<h2>Blind (%DEVICE_NAME%)</h2> </div>
+		<br/>
+		<fieldset>
+			<legend> <b>&nbsp;Settings&nbsp;</b> </legend>
+			<form method='POST' action='/'>
+				<br/> <b>Open Time (milli seconds)</b>
+				<br/>
+				<input id='opentime' name='opentime' placeholder='%OPENTIME%' value='%OPENTIME%'>
+				<br/>
+				<br/>
+				<b>Close Time (milli seconds)</b>
+				<br/>
+				<input id='closetime' name='closetime' placeholder='%CLOSETIME%' value='%CLOSETIME%' />
+				<br/>
+				<br/>
+				<b>Switch Buttons (Physical Buttons)</b>
+				<input id='switch_buttons' name='switch_buttons' type="checkbox" %SWITCH_BUTTONS_CHECKED% />
+				<br/>
+				<br/>
+				<b>Speed</b>
+				<input id='speed' name='speed' type="range" min="1" max="100" value="%SPEED%" />
+				<br/>
+				<br/>
+				<b>Device Name</b>
+				<br/>
+                <input id='hostname' name='hostname' placeholder='%DEVICE_NAME%' value='%DEVICE_NAME%'>
+				<br/>
+				<br/>
+				<button name='save' type='submit' class='button bgrn'>Save</button>
+			</form>
+		</fieldset>
+		<br/>
+		<fieldset>
+			<legend> <b>&nbsp;Log&nbsp;</b> </legend>
+			<iframe src="/log" frameBorder="0"></iframe>
+		</fieldset>
+		<br/>
+		<form method='POST' action='control'>
+			<br/>
+			<br/>
+			<button name='open' type='submit' class='button bgrn' %OPEN_BUTTON_DISABLED%>Open</button>
+			<br/>
+			<br/>
+			<button name='close' type='submit' class='button bgrn' %CLOSE_BUTTON_DISABLED%>Close</button>
+		</form>
+	</div>
+</body>
+
+</html>

@@ -5,15 +5,18 @@
 #include "Timer.h"
 #include "control.h"
 
-Timer eventTimer;
+// Timer eventTimer;
 Timer openTimer;
 Timer closeTimer;
 
+static int openTimerId = -1;
+static int closeTimerId = -1;
+
 void turn_off_hbridge() {
 
-  digitalWrite(LED, LOW);
   digitalWrite(DIS, HIGH);
   analogWrite(PWM, 0);
+  digitalWrite(LED, LOW);
 
   Serial.println("turn_off_hbridge");
   logger("turn_off_hbridge");
@@ -23,19 +26,27 @@ static void turn_on_hbridge_cw() {
 
   digitalWrite(LED, HIGH);
   digitalWrite(DIR, CW);
-  analogWrite(PWM, PWMRANGE);
+
+  int pwm = (int)((get_speed() / 100.0) * PWMRANGE);
+  pwm = max(0, min(pwm, PWMRANGE));
+
+  analogWrite(PWM, pwm);
+  
   digitalWrite(DIS, LOW);
 
   Serial.println("turn_on_hbridge_cw");
   logger("turn_on_hbridge_cw");
 }
 
-
 static void turn_on_hbridge_ccw() {
 
   digitalWrite(LED, HIGH);
   digitalWrite(DIR, CCW);
-  analogWrite(PWM, PWMRANGE);
+
+  int pwm = (int)((get_speed() / 100.0) * PWMRANGE);
+  pwm = max(0, min(pwm, PWMRANGE));
+
+  analogWrite(PWM, pwm);
   digitalWrite(DIS, LOW);
 
   Serial.println("turn_on_hbridge_ccw");
@@ -44,14 +55,14 @@ static void turn_on_hbridge_ccw() {
 
 static status_t status = STATUS_OPENED;
 
-static void checkFaultEvent()
-{
-  int err = digitalRead(ERROR);
+// static void checkFaultEvent()
+// {
+//   int err = digitalRead(ERROR);
 
-  if (err == 0) {
-    logger("max14871 error overcurrent or thermal shutdown");
-  }
-}
+//   if (err == 0) {
+//     logger("max14871 error overcurrent or thermal shutdown");
+//   }
+// }
 
 static void openTimerEvent()
 {
@@ -80,11 +91,16 @@ status_t getBlindStatus()
 
 const char* getBlindStatusText()
 {
-  if(getBlindStatus() == STATUS_CLOSED) {
+  status_t s = getBlindStatus();
+
+  if(s == STATUS_CLOSED) {
     return "CLOSED";
   }
-  else {
+  else if (s == STATUS_OPENED) {
     return "OPENED";
+  }
+  else {
+    return "UNDEFINED";
   }
 }
 
@@ -94,6 +110,8 @@ bool openBlind(bool force)
     return false;
   }
 
+  status = STATUS_UNDEFINED;
+  turn_off_hbridge();
   turn_on_hbridge_cw();
   logger("openBlind");
 
@@ -106,13 +124,16 @@ bool openBlindAndWait(bool force)
     return false;
   }
   
+  logger("openBlindAndWait for: " + get_opentime());
   stopOpenBlindAfterTime(get_opentime());  
 
   return true;
 }
 
 void stopOpenBlindAfterTime(long milli) {
-  openTimer.after(milli, openTimerEvent);
+  String s = String("stopOpenBlindAfterTime after: ") + milli;
+  logger(s.c_str());
+  openTimerId = openTimer.after(milli, openTimerEvent);
 }
 
 bool closeBlind(bool force)
@@ -121,6 +142,9 @@ bool closeBlind(bool force)
     return false;
   }
 
+  status = STATUS_UNDEFINED;
+
+  turn_off_hbridge();
   turn_on_hbridge_ccw();
   logger("closeBlind");
 
@@ -133,13 +157,16 @@ bool closeBlindAndWait(bool force)
     return false;
   }
 
+  logger("closeBlindAndWait for: " + get_closetime());
   stopCloseBlindAfterTime(get_closetime());  
 
   return true;
 }
 
 void stopCloseBlindAfterTime(long milli) {
-  closeTimer.after(milli, closeTimerEvent);
+  String s = String("stopCloseBlindAfterTime after: ") + milli;
+  logger(s.c_str());
+  closeTimerId = closeTimer.after(milli, closeTimerEvent);
 }
 
 void stopBlind() {
@@ -148,12 +175,20 @@ void stopBlind() {
 
 void motorSetup() {
   turn_off_hbridge();
-  eventTimer.every(1000, checkFaultEvent);
+  // eventTimer.every(1000, checkFaultEvent);
 }
 
 void motorUpdate() {
 
-  eventTimer.update();
+  // eventTimer.update();
   openTimer.update();
   closeTimer.update();
+}
+
+void stopTimers() {
+
+  Serial.println("stopping timers");
+
+  openTimer.stop(openTimerId);
+  closeTimer.stop(closeTimerId);
 }

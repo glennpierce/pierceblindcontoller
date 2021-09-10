@@ -5,7 +5,8 @@
 typedef enum
 {
   STATUS_CLOSED = 0,
-  STATUS_OPENED = 1
+  STATUS_OPENED = 1,
+  STATUS_UNDEFINED = 2,
 } status_t;
 
 void turn_off_hbridge();
@@ -20,5 +21,6 @@ const char* getBlindStatusText();
 void stopOpenBlindAfterTime(long milli);
 void stopCloseBlindAfterTime(long milli);
 void stopBlind();
+void stopTimers();
 
 #endif

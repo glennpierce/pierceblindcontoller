@@ -6,7 +6,7 @@
 
 #define DEVICE_NAME "Blind"
 
-#define FIRMWARE_VERSION "0.9"
+#define FIRMWARE_VERSION "1.0"
 #define LED 16
 #define DIS 2
 #define PWM 4
@@ -24,9 +24,11 @@
 void set_devicename(const char *name);
 void set_opentime(uint32 t);
 void set_closetime(uint32 t);
+void set_speed(uint32 t);
 const char* get_devicename();
 uint32 get_opentime();
 uint32 get_closetime();
+uint32 get_speed();
 
 void set_button_pin_flipped(bool flipped);
 bool get_button_pin_flipped();
