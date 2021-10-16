@@ -291,16 +291,28 @@ void read_temperature() {
     client.publish(mqtt_temperature_humidity_status, tmp);
 }
 
+static unsigned long last_interrupt_millis = millis();
+static int number_of_errors = 0;
+
 static void ICACHE_RAM_ATTR handleErrorInterrupt() {
 
-  // digitalWrite(DIS, HIGH);
-  // analogWrite(PWM, 0);
-  // digitalWrite(LED, LOW);
+  unsigned long millis_since_last_interrupt = millis() - last_interrupt_millis;
+  last_interrupt_millis = millis();
 
-  Serial.println("Error Interrupt");
-  turn_off_hbridge();
-  stopTimers();
-  logger("max14871 error overcurrent or thermal shutdown");
+  if (millis_since_last_interrupt > 1000) {
+    number_of_errors = 0;
+    return;
+  }
+
+  number_of_errors++;
+
+  if (number_of_errors >= 60) {
+    number_of_errors = 0;
+    Serial.println("Error Interrupt");
+    turn_off_hbridge();
+    stopTimers();
+    logger("max14871 error overcurrent or thermal shutdown");
+  }
 
   // Serial.println("Flashing ERROR LEDS");
   // for(int i=0; i <= 8; i++) {

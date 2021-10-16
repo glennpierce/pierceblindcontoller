@@ -22,17 +22,40 @@ void turn_off_hbridge() {
   logger("turn_off_hbridge");
 }
 
+// Try ramping slowly to reduce voltage spike across sense resistor
+static void ramp_pwm(int pin, int max_pwm) {
+
+  analogWrite(pin, 0);
+
+  for(int i=0; i<=max_pwm; i++) {
+    analogWrite(pin, i);
+    delayMicroseconds(40);
+  }
+}
+
 static void turn_on_hbridge_cw() {
+
+  if (digitalRead(DIR) == CW && analogRead(PWM) > 0 && digitalRead(DIS) == LOW) {
+    // Already moving CW so exit
+    return;
+  }
 
   digitalWrite(LED, HIGH);
   digitalWrite(DIR, CW);
 
+  analogWrite(PWM, 0);  // Set PWM to 0
+  digitalWrite(DIS, LOW); // Enable motor
+
   int pwm = (int)((get_speed() / 100.0) * PWMRANGE);
   pwm = max(0, min(pwm, PWMRANGE));
 
-  analogWrite(PWM, pwm);
+  String log = String("turn_on_hbridge_cw pwm: ") + String(pwm);
+  logger(log.c_str());
+
+  // analogWrite(PWM, pwm);
+  ramp_pwm(PWM, pwm);
   
-  digitalWrite(DIS, LOW);
+  // digitalWrite(DIS, LOW);
 
   Serial.println("turn_on_hbridge_cw");
   logger("turn_on_hbridge_cw");
@@ -40,14 +63,27 @@ static void turn_on_hbridge_cw() {
 
 static void turn_on_hbridge_ccw() {
 
+  if (digitalRead(DIR) == CCW && analogRead(PWM) > 0 && digitalRead(DIS) == LOW) {
+    // Already moving CCW so exit
+    return;
+  }
+
   digitalWrite(LED, HIGH);
   digitalWrite(DIR, CCW);
+
+  analogWrite(PWM, 0);  // Set PWM to 0
+  digitalWrite(DIS, LOW); // Enable motor
 
   int pwm = (int)((get_speed() / 100.0) * PWMRANGE);
   pwm = max(0, min(pwm, PWMRANGE));
 
-  analogWrite(PWM, pwm);
-  digitalWrite(DIS, LOW);
+  String log = String("turn_on_hbridge_ccw pwm: ") + String(pwm);
+  logger(log.c_str());
+
+  // analogWrite(PWM, pwm);
+  ramp_pwm(PWM, pwm);
+
+  // digitalWrite(DIS, LOW);
 
   Serial.println("turn_on_hbridge_ccw");
   logger("turn_on_hbridge_ccw");
@@ -111,7 +147,7 @@ bool openBlind(bool force)
   }
 
   status = STATUS_UNDEFINED;
-  turn_off_hbridge();
+  // turn_off_hbridge();
   turn_on_hbridge_cw();
   logger("openBlind");
 
@@ -144,7 +180,7 @@ bool closeBlind(bool force)
 
   status = STATUS_UNDEFINED;
 
-  turn_off_hbridge();
+  // turn_off_hbridge();
   turn_on_hbridge_ccw();
   logger("closeBlind");
 
