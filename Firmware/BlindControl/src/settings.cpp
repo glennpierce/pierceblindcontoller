@@ -15,6 +15,10 @@ void logger(const char* s) {
   buffer.push(String(millis()) + ": " + String(s));
 }
 
+void clearBuffer() {
+    buffer.clear();
+}
+
 String get_log() {
   String s = "";
   const uint8_t len = buffer.size();
@@ -176,6 +180,17 @@ void serve() {
         // request->send(SPIFFS, "/log.html", String(), false, processor);
         request->send(200, "application/text", log);
     });
+
+    server.on("/clearlog", HTTP_GET, [](AsyncWebServerRequest *request){
+
+        clearBuffer();
+
+        String log = get_log();
+        // request->send(SPIFFS, "/log.html", String(), false, processor);
+        request->send(200, "application/text", log);
+    });
+
+    
 
     // Send a POST request to <IP>/post with a form field message set to <message>
     server.on("/", HTTP_POST, [](AsyncWebServerRequest *request){

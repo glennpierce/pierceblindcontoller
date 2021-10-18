@@ -37,15 +37,16 @@ var app = new Vue({
             if (!ms)
                 return '';
                 
-            ms = parseInt((Math.floor(parseFloat(ms))) * 1000, 10);
-            const days = Math.floor(ms / (24*60*60*1000));
-            const daysms = ms % (24*60*60*1000);
+            // ms = parseInt((Math.floor(parseFloat(ms))) * 1000, 10);
+            let value = parseInt(ms, 10);
+            const days = Math.floor(value / (24*60*60*1000));
+            const daysms = value % (24*60*60*1000);
             const hours = Math.floor(daysms / (60*60*1000));
-            const hoursms = ms % (60*60*1000);
+            const hoursms = value % (60*60*1000);
             const minutes = Math.floor(hoursms / (60*1000));
-            const minutesms = ms % (60*1000);
+            const minutesms = value % (60*1000);
             const sec = Math.floor(minutesms / 1000);
-            return days + "days " + hours + "hours " + minutes + " minutes and " + sec + " seconds";
+            return days + " days " + hours + " hours " + minutes + " minutes and " + sec + " seconds";
         },
     },
     computed: {
@@ -110,7 +111,6 @@ var app = new Vue({
                 url: '/settings',
                 method: 'GET',
                 success: function (obj) {
-                    console.log("Data");
                     console.log(obj);
     
                     self.devicename = obj["devicename"];
@@ -126,15 +126,15 @@ var app = new Vue({
             });
         },
         getStatus: function () {   
-            var self = this 
+            var self = this;
             $.ajax({
                 url: '/status',
                 method: 'POST',
+                context: this,
                 success: function (obj) {
-                    console.log("Data");
                     console.log(obj);
     
-                    self.uptime = obj["uptime"] / 1000;
+                    self.uptime = obj["uptime"];
                     self.status = obj["status"];
                     self.pwm = obj["pwm"];
                     self.dis = obj["dis"];
@@ -148,12 +148,13 @@ var app = new Vue({
             });
         },
         getLog: function () {   
-            var self = this 
+            let self = this;
             $.ajax({
                 url: '/log',
                 method: 'GET',
+                context: this,
                 success: function (obj) {
-                    console.log("Data");
+
                     console.log(obj);
     
                     self.log = obj;
@@ -162,6 +163,22 @@ var app = new Vue({
                     console.log(error);
                 }
             });
+        },
+        onClear: function () {
+            var self = this;
+            self.log = "";
+            
+            $.ajax({
+                url: '/clearlog',
+                method: 'GET',
+                context: this,
+                success: function () {
+                    self.getLog();
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            }); 
         },
         onRefresh: function () {
             var self = this;
@@ -181,6 +198,7 @@ var app = new Vue({
             $.ajax({
                 url: '/open',
                 method: 'POST',
+                context: this,
                 success: function (obj) {
 
                     window.setTimeout(function(){
@@ -208,6 +226,7 @@ var app = new Vue({
             $.ajax({
                 url: '/close',
                 method: 'POST',
+                context: this,
                 success: function (obj) {
                     window.setTimeout(function(){
                         // code to run after opentime

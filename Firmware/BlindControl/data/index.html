@@ -1,7 +1,7 @@
 ﻿<html>
     <head>
         <link rel="stylesheet" href="/index.css">
-        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 		<link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
@@ -16,8 +16,7 @@
 					<h2>Blind [[devicename]]</h2>
 				</div>
 				<br/>
-				<h2>Uptime: [[uptime | mstotime]]</h2>
-				<span class="material-icons" @click="onRefresh">refresh</span>
+				<h2>Uptime: ([[uptime]]) [[uptime | mstotime]]</h2>
 				<br />
 
 				<fieldset>
@@ -51,6 +50,11 @@
 				</fieldset>
 
 				<!-- v-on:click="onSave" -->
+
+				<br/>
+
+				<button v-on:click="onRefresh" style="width:80px;" class='button bgrn'><span class="material-icons">refresh</span></button>
+				<button v-on:click="onClear" style="width:80px;" class='button bgrn'><span class="material-icons">delete</span></button>
 
 				<br/>
 				<fieldset>

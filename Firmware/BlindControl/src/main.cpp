@@ -219,6 +219,9 @@ void OTASetup() {
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+
+  logger("connected to wifi");
+  // logger(WiFi.localIP());
 }
 
 void save_config() {
@@ -395,14 +398,16 @@ void setup() {
         char tmp[100] = "";
         sprintf(tmp, "%d - %s -%d - %d", device_id, device_name, state, value);
 
-        client.publish(mqtt_status, tmp);
-
+        logger(tmp);
+        
         if(state) {
           openBlindAndWait(false);
         }
         else {
           closeBlindAndWait(false);
         }
+
+        // client.publish(mqtt_status, tmp);
 
         Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
     });
@@ -454,7 +459,8 @@ void reconnect() {
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
-      delay(5000);
+      logger("mqtt connect failed: " + client.state());
+      delay(10000);
     }
 
     delay(100);
