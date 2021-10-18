@@ -4,6 +4,9 @@
   
 var app = new Vue({
     el: '#app',
+    // icons: {
+    //     iconfont: 'mdi',
+    // },
     delimiters: ['[[', ']]'],
     data() {
         return {    devicename: "",
@@ -23,6 +26,27 @@ var app = new Vue({
                     log: "",
                     // connection: null,
         }
+    },
+    filters: {
+        capitalize: function (value) {
+          if (!value) return ''
+          value = value.toString()
+          return value.charAt(0).toUpperCase() + value.slice(1)
+        },
+        mstotime: function (ms) {
+            if (!ms)
+                return '';
+                
+            ms = parseInt((Math.floor(parseFloat(ms))) * 1000, 10);
+            const days = Math.floor(ms / (24*60*60*1000));
+            const daysms = ms % (24*60*60*1000);
+            const hours = Math.floor(daysms / (60*60*1000));
+            const hoursms = ms % (60*60*1000);
+            const minutes = Math.floor(hoursms / (60*1000));
+            const minutesms = ms % (60*1000);
+            const sec = Math.floor(minutesms / 1000);
+            return days + "days " + hours + "hours " + minutes + " minutes and " + sec + " seconds";
+        },
     },
     computed: {
         // a computed getter
@@ -138,6 +162,11 @@ var app = new Vue({
                     console.log(error);
                 }
             });
+        },
+        onRefresh: function () {
+            var self = this;
+            self.getStatus();
+            self.getLog();
         },
         onSave: function () {   
 

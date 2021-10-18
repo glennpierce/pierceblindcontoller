@@ -437,6 +437,7 @@ void reconnect() {
     if (client.connect(clientId.c_str())) {
 
       Serial.println("mqtt connected");
+      logger("mqtt connected");
       // Once connected, publish an announcement...
 
       client.publish(mqtt_status, "Mqtt Connected");
