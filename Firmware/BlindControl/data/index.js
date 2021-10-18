@@ -34,9 +34,6 @@ var app = new Vue({
           return value.charAt(0).toUpperCase() + value.slice(1)
         },
         mstotime: function (ms) {
-            if (!ms)
-                return '';
-                
             // ms = parseInt((Math.floor(parseFloat(ms))) * 1000, 10);
             let value = parseInt(ms, 10);
             const days = Math.floor(value / (24*60*60*1000));
