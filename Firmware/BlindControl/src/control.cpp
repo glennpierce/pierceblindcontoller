@@ -22,6 +22,16 @@ void turn_off_hbridge() {
   logger("turn_off_hbridge");
 }
 
+void brake_hbridge() {
+
+  digitalWrite(DIS, LOW);
+  analogWrite(PWM, 0);
+  digitalWrite(LED, LOW);
+
+  Serial.println("brake_hbridge");
+  logger("brake_hbridge");
+}
+
 // Try ramping slowly to reduce voltage spike across sense resistor
 static void ramp_pwm(int pin, int max_pwm) {
 
@@ -206,7 +216,8 @@ void stopCloseBlindAfterTime(long milli) {
 }
 
 void stopBlind() {
-   turn_off_hbridge();
+  // turn_off_hbridge();
+  brake_hbridge();
 }
 
 void motorSetup() {

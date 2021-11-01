@@ -396,7 +396,7 @@ void setup() {
     fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
         
         char tmp[100] = "";
-        sprintf(tmp, "%d - %s -%d - %d", device_id, device_name, state, value);
+        sprintf(tmp, "fauxmo: %d - %s -%d - %d", device_id, device_name, state, value);
 
         logger(tmp);
         
